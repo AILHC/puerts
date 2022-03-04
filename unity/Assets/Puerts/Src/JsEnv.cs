@@ -191,7 +191,19 @@ namespace Puerts
             string debugPath;
             return loader.ReadFile(identifer, out debugPath);
         }
+        public T GetJsValue<T>(IntPtr info, string key = "")
+        {
+            IntPtr resultInfo = PuertsDLL.GetJsValue(info, key);
+            if (resultInfo == IntPtr.Zero)
+            {
+                // string exceptionInfo = PuertsDLL.GetLastExceptionInfo(isolate);
+                // throw new Exception(exceptionInfo);
 
+            }
+            T result = StaticTranslate<T>.Get(Idx, isolate, NativeValueApi.GetValueFromResult, resultInfo, false);
+            PuertsDLL.ResetResult(resultInfo);
+            return result;
+        }
         /**
         * execute the module and get the result
         * when exportee is null, get the module namespace
