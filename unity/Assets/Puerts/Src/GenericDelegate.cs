@@ -302,12 +302,12 @@ namespace Puerts
     {
         private Dictionary<IntPtr, WeakReference> nativePtrToJSObject = new Dictionary<IntPtr, WeakReference>();
 
-        public JSObject GetOrCreateJSObject(IntPtr ptr, JsEnv jsEnv) 
+        public JSObject GetOrCreateJSObject(IntPtr ptr, JsEnv jsEnv)
         {
             WeakReference maybeOne;
             if (nativePtrToJSObject.TryGetValue(ptr, out maybeOne) && maybeOne.IsAlive)
             {
-               return maybeOne.Target as JSObject;
+                return maybeOne.Target as JSObject;
             }
             jsEnv.RemoveJSObjectFromPendingRelease(ptr);
             JSObject jsObject = new JSObject(ptr, jsEnv);
@@ -341,6 +341,27 @@ namespace Puerts
         private Dictionary<string, IntPtr> _funcIntPtrMap = new Dictionary<string, IntPtr>();
         private Dictionary<string, IntPtr> _valueResultIntPtrMap = new Dictionary<string, IntPtr>();
 
+        public IntPtr GetFuncPtr(string key)
+        {
+            IntPtr nativeJsFuncPtr;
+            _funcIntPtrMap.TryGetValue(key, out nativeJsFuncPtr);
+            if (nativeJsFuncPtr == IntPtr.Zero)
+            {
+
+                IntPtr resIntPtr = PuertsDLL.GetJsValue(this.nativeJsObjectPtr, key);
+                if (PuertsDLL.GetResultType(resIntPtr) != JsValueType.Function)
+                {
+                    throw new Exception(key + " is not a function");
+                }
+                nativeJsFuncPtr = PuertsDLL.GetFunctionFromResult(resIntPtr);
+                if (nativeJsFuncPtr != IntPtr.Zero)
+                {
+                    jsEnv.IncFuncRef(nativeJsFuncPtr);
+                    _funcIntPtrMap.Add(key, nativeJsFuncPtr);
+                }
+            }
+            return nativeJsFuncPtr;
+        }
         /// <summary>
         /// Call a method in a JS object with a key
         /// </summary>
@@ -350,35 +371,63 @@ namespace Puerts
         /// <returns></returns>
         public TResult CallFunc<TResult>(string key, params object[] args)
         {
-            IntPtr nativeJsFuncPtr;
-            _funcIntPtrMap.TryGetValue(key, out nativeJsFuncPtr);
-            if (nativeJsFuncPtr == IntPtr.Zero)
-            {
-                
-                IntPtr resIntPtr= PuertsDLL.GetJsValue(this.nativeJsObjectPtr, key);
-                if(PuertsDLL.GetResultType(resIntPtr) != JsValueType.Function)
-                {
-                    throw new Exception(key+" is not a function");
-                }
-                nativeJsFuncPtr = PuertsDLL.GetFunctionFromResult(resIntPtr);
-                jsEnv.IncFuncRef(nativeJsFuncPtr);
-                _funcIntPtrMap.Add(key, nativeJsFuncPtr);
-            }
-            if (nativeJsFuncPtr == IntPtr.Zero)
-            {
-                return default(TResult);
-            }
+
 
 #if THREAD_SAFE
             lock(jsEnv) {
 #endif
             jsEnv.CheckLiveness();
-            foreach (object o in args)
+            IntPtr nativeJsFuncPtr = GetFuncPtr(key);
+            for (int i = 0; i < 0; i++)
             {
+                object o = args[i];
                 Type t = o.GetType();
                 jsEnv.GeneralSetterManager.GetTranslateFunc(o.GetType())(jsEnv.isolate, NativeValueApi.SetValueToArgument, nativeJsFuncPtr, o);
-
             }
+            // foreach (object o in args)
+            // {
+            //     Type t = o.GetType();
+            //     jsEnv.GeneralSetterManager.GetTranslateFunc(o.GetType())(jsEnv.isolate, NativeValueApi.SetValueToArgument, nativeJsFuncPtr, o);
+
+            // }
+
+            IntPtr resultInfo = PuertsDLL.InvokeJSFunction(nativeJsFuncPtr, true);
+            if (resultInfo == IntPtr.Zero)
+            {
+                return default(TResult);
+            }
+            else
+            {
+                TResult result = StaticTranslate<TResult>.Get(jsEnv.Idx, jsEnv.isolate, NativeValueApi.GetValueFromResult, resultInfo, false);
+                PuertsDLL.ResetResult(resultInfo);
+                return result;
+            }
+
+#if THREAD_SAFE
+            }
+#endif
+        }
+        /// <summary>
+        /// Call a method in a JS object with a key
+        /// </summary>
+        /// <typeparam name="TResult"> </typeparam>
+        /// <param name="nativeJsFuncPtr"> funcPtr </param>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        public TResult CallFunc<TResult>(IntPtr nativeJsFuncPtr, params object[] args)
+        {
+
+
+#if THREAD_SAFE
+            lock(jsEnv) {
+#endif
+            jsEnv.CheckLiveness();
+            // foreach (object o in args)
+            // {
+            //     Type t = o.GetType();
+            //     jsEnv.GeneralSetterManager.GetTranslateFunc(o.GetType())(jsEnv.isolate, NativeValueApi.SetValueToArgument, nativeJsFuncPtr, o);
+
+            // }
             IntPtr resultInfo = PuertsDLL.InvokeJSFunction(nativeJsFuncPtr, true);
             if (resultInfo == IntPtr.Zero)
             {
@@ -423,9 +472,9 @@ namespace Puerts
                 }
 
             }
-            
-            
-            
+
+
+
 #if THREAD_SAFE
             lock(jsEnv) {
 #endif
