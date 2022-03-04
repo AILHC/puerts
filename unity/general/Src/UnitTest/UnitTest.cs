@@ -1239,6 +1239,57 @@ namespace Puerts.UnitTest
 
             jsEnv.Dispose();
         }
+        [Test]
+        public void CallJsObjectFunction()
+        {
+            var loader = new TxtLoader();
+            loader.AddMockFileContent("whatever.mjs", @"
+                
+                const noArgs_void_Func = function() {  }
+                const noArgs_returnNumber_Func = function() { return 1; }
+                const args_void_Func = function(a,b,c,d,e) { a+b+c+d+e }
+                const args_returnNumber_Func = function(a,b,c,d,e) { return a+b+c+d+e }
+                export { noArgs_void_Func,noArgs_returnNumber_Func,args_void_Func,args_returnNumber_Func };
+            ");
+            var jsEnv = new JsEnv(loader);
+            var ns = jsEnv.ExecuteModule<JSObject>("whatever.mjs");
+            object noArgs_void_Func_res = ns.CallFunc<object>("noArgs_void_Func");
+
+            Assert.True(noArgs_void_Func_res == null);
+
+            double noArgs_returnNumber_Func_res = ns.CallFunc<double>("noArgs_returnNumber_Func");
+            
+            Assert.True(noArgs_returnNumber_Func_res == 1f);
+
+            object args_void_Func_res = ns.CallFunc<object>("args_void_Func",1,2,3,4,5);
+
+            Assert.True(args_void_Func_res == null);
+
+
+            double args_returnNumber_Func_res = ns.CallFunc<double>("args_returnNumber_Func", 1, 2, 3, 4, 5);
+
+            Assert.AreEqual(15d, args_returnNumber_Func_res);
+
+            jsEnv.Dispose();
+        }
+        [Test]
+        public void GetJsObjectValue()
+        {
+            var loader = new TxtLoader();
+            loader.AddMockFileContent("whatever.mjs", @"
+                
+                const func = function() { return 1; }
+                const a = 2;
+                export { func,a };
+            ");
+            var jsEnv = new JsEnv(loader);
+            var ns = jsEnv.ExecuteModule<JSObject>("whatever.mjs");
+            double a = ns.GetValue<double>("a");
+            
+            Assert.True(a == 2);
+
+            jsEnv.Dispose();
+        }
     }
 }
 

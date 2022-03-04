@@ -338,7 +338,106 @@ namespace Puerts
             this.nativeJsObjectPtr = nativeJsObjectPtr;
             this.jsEnv = jsEnv;
         }
+        private Dictionary<string, IntPtr> _funcIntPtrMap = new Dictionary<string, IntPtr>();
+        private Dictionary<string, IntPtr> _valueResultIntPtrMap = new Dictionary<string, IntPtr>();
 
+        /// <summary>
+        /// Call a method in a JS object with a key
+        /// </summary>
+        /// <typeparam name="TResult"> </typeparam>
+        /// <param name="key"> key </param>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        public TResult CallFunc<TResult>(string key, params object[] args)
+        {
+            IntPtr nativeJsFuncPtr;
+            _funcIntPtrMap.TryGetValue(key, out nativeJsFuncPtr);
+            if (nativeJsFuncPtr == IntPtr.Zero)
+            {
+                
+                IntPtr resIntPtr= PuertsDLL.GetJsValue(this.nativeJsObjectPtr, key);
+                if(PuertsDLL.GetResultType(resIntPtr) != JsValueType.Function)
+                {
+                    throw new Exception(key+" is not a function");
+                }
+                nativeJsFuncPtr = PuertsDLL.GetFunctionFromResult(resIntPtr);
+                jsEnv.IncFuncRef(nativeJsFuncPtr);
+                _funcIntPtrMap.Add(key, nativeJsFuncPtr);
+            }
+            if (nativeJsFuncPtr == IntPtr.Zero)
+            {
+                return default(TResult);
+            }
+
+#if THREAD_SAFE
+            lock(jsEnv) {
+#endif
+            jsEnv.CheckLiveness();
+            foreach (object o in args)
+            {
+                Type t = o.GetType();
+                jsEnv.GeneralSetterManager.GetTranslateFunc(o.GetType())(jsEnv.isolate, NativeValueApi.SetValueToArgument, nativeJsFuncPtr, o);
+
+            }
+            IntPtr resultInfo = PuertsDLL.InvokeJSFunction(nativeJsFuncPtr, true);
+            if (resultInfo == IntPtr.Zero)
+            {
+                return default(TResult);
+            }
+            else
+            {
+                TResult result = StaticTranslate<TResult>.Get(jsEnv.Idx, jsEnv.isolate, NativeValueApi.GetValueFromResult, resultInfo, false);
+                PuertsDLL.ResetResult(resultInfo);
+                return result;
+            }
+
+#if THREAD_SAFE
+            }
+#endif
+        }
+        /// <summary>
+        /// Get Value By key
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public T GetValue<T>(string key)
+        {
+            if (typeof(Delegate).IsAssignableFrom(typeof(T)))
+            {
+                throw new Exception(typeof(T) + "Type can not a Delegate");
+            }
+
+            IntPtr nativeJsValueResultPtr;
+            _valueResultIntPtrMap.TryGetValue(key, out nativeJsValueResultPtr);
+            if (nativeJsValueResultPtr == IntPtr.Zero)
+            {
+                nativeJsValueResultPtr = PuertsDLL.GetJsValue(this.nativeJsObjectPtr, key);
+                if (nativeJsValueResultPtr == IntPtr.Zero)
+                {
+                    return default(T);
+                }
+                else
+                {
+                    _valueResultIntPtrMap.Add(key, nativeJsValueResultPtr);
+                }
+
+            }
+            
+            
+            
+#if THREAD_SAFE
+            lock(jsEnv) {
+#endif
+            jsEnv.CheckLiveness();
+
+            var val = jsEnv.GeneralGetterManager.AnyTranslator(jsEnv.isolate, NativeValueApi.GetValueFromResult, nativeJsValueResultPtr, false);
+            return (T)val;
+
+#if THREAD_SAFE
+            }
+#endif
+        }
         // Func<JSObject, string, object> MemberGetter;
         // public T Get<T>(string key) 
         // {
@@ -347,12 +446,12 @@ namespace Puerts
         //         MemberGetter = jsEnv.Eval<Func<JSObject, string, object>>("(function(obj, key) { return obj[key] })");
         //     }
         //     object value = MemberGetter(this, key);
-            
+
         //     Type maybeDelegateType = typeof(T);
         //     if (typeof(Delegate).IsAssignableFrom(typeof(T))) {
         //         return (T)(object)jsEnv.genericDelegateFactory.Create(typeof(T), (IntPtr)value);
         //     }
-            
+
         //     return (T)value;
         // }
 
@@ -362,6 +461,13 @@ namespace Puerts
             lock(jsEnv) 
             {
 #endif
+            foreach(IntPtr funcPtr in _funcIntPtrMap.Values)
+            {
+                jsEnv.DecFuncRef(funcPtr);
+            }
+            _funcIntPtrMap.Clear();
+            _funcIntPtrMap = null;
+            //TODO 需要做释放的操作
             jsEnv.addPenddingReleaseObject(nativeJsObjectPtr);
 #if THREAD_SAFE
             }

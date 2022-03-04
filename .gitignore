@@ -1,2 +1,8 @@
 .DS_Store
 .vscode
+native_src\v8\*
+unity/native_src/qjs_v8_bin/**/*
+unity/native_src/build32_v8/*
+unity/native_src/build64_v8/*
+
+unity/Assets/Plugins/*

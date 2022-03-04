@@ -7,7 +7,6 @@
 #include "JSEngine.h"
 #include <cstring>
 #include "V8Utils.h"
-
 #define LIB_VERSION 15
 
 using puerts::JSEngine;
@@ -85,7 +84,35 @@ V8_EXPORT FResultInfo * ExecuteModule(v8::Isolate *Isolate, const char* Path, co
         return nullptr;
     }
 }
+V8_EXPORT FResultInfo * GetJsValue(FResultInfo *ResultInfo, const char* key)
+{
+    if (key != nullptr && !ResultInfo->Result.IsEmpty())
+    {
+        v8::Isolate* Isolate = ResultInfo->Isolate;
+        v8::Isolate::Scope IsolateScope(Isolate);
+        v8::HandleScope HandleScope(Isolate);
+        v8::Local<v8::Context> Context = ResultInfo->Context.Get(Isolate);
+        v8::Context::Scope ContextScope(Context);
+        
+        auto Result = ResultInfo->Result.Get(Isolate);
 
+        auto MaybeValue = Result.As<v8::Object>()->Get(Context,FV8Utils::V8String(Isolate, key));
+        if (MaybeValue.IsEmpty())
+        {
+            return nullptr;
+        }
+        else
+        {
+            auto JsEngine = FV8Utils::IsolateData<JSEngine>(Isolate);
+            JsEngine->ResultInfo.Result.Reset(Isolate, MaybeValue.ToLocalChecked());
+            return &(JsEngine->ResultInfo);
+        }
+    }
+    else
+    {
+        return nullptr;
+    }
+}
 V8_EXPORT FResultInfo * Eval(v8::Isolate *Isolate, const char *Code, const char* Path)
 {
     auto JsEngine = FV8Utils::IsolateData<JSEngine>(Isolate);
