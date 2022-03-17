@@ -1455,7 +1455,7 @@ namespace Puerts.Editor
                 Debug.Log("finished! use " + (DateTime.Now - start).TotalMilliseconds + " ms");
                 AssetDatabase.Refresh();
 
-                filters = null;
+                Utils.filters = null;
             }
 
             [MenuItem("Puerts/Generate index.d.ts", false, 1)]
@@ -1469,7 +1469,7 @@ namespace Puerts.Editor
                 Debug.Log("finished! use " + (DateTime.Now - start).TotalMilliseconds + " ms");
                 AssetDatabase.Refresh();
                 
-                filters = null;
+                Utils.filters = null;
             }
 
             [MenuItem("Puerts/Generate index.d.ts ESM compatible (unstable)", false, 1)]
@@ -1483,7 +1483,7 @@ namespace Puerts.Editor
                 Debug.Log("finished! use " + (DateTime.Now - start).TotalMilliseconds + " ms");
                 AssetDatabase.Refresh();
                 
-                filters = null;
+                Utils.filters = null;
             }
 
             [MenuItem("Puerts/Clear Generated Code", false, 2)]
@@ -1499,15 +1499,14 @@ namespace Puerts.Editor
             }
 
 #endif
-            public static List<MethodInfo> filters;
             public static Dictionary<string, List<KeyValuePair<object, int>>> configure;
             public static List<Type> genTypes;
 
             public static void GenerateDTS(string saveTo, bool esmMode = false, ILoader loader = null)
             {
-                if (filters == null)
+                if (Utils.filters == null)
                 {
-                    filters = Configure.GetFilters();
+                    Utils.filters = Configure.GetFilters();
                     configure = Configure.GetConfigureByTags(new List<string>() {
                         "Puerts.BindingAttribute",
                         "Puerts.BlittableCopyAttribute",
@@ -1549,9 +1548,9 @@ namespace Puerts.Editor
 
             public static void GenerateWrapper(string saveTo, ILoader loader = null)
             {
-                if (filters == null)
+                if (Utils.filters == null)
                 {
-                    filters = Configure.GetFilters();
+                    Utils.filters = Configure.GetFilters();
                     configure = Configure.GetConfigureByTags(new List<string>() {
                         "Puerts.BindingAttribute",
                         "Puerts.BlittableCopyAttribute",
