@@ -7,6 +7,7 @@
 #include "JSEngine.h"
 #include <cstring>
 #include "V8Utils.h"
+#include "jswrapper/include/jswrapper/SeApi.h"
 #define LIB_VERSION 15
 
 using puerts::JSEngine;
@@ -84,6 +85,17 @@ V8_EXPORT FResultInfo * ExecuteModule(v8::Isolate *Isolate, const char* Path, co
         return nullptr;
     }
 }
+V8_EXPORT bool TestSE(){
+    auto *engine = se::ScriptEngine::getInstance();
+
+    engine->start();
+    auto ret = engine->evalString("var a = 1;");
+    
+    if (!ret) return EXIT_FAILURE;
+
+    se::ScriptEngine::destroyInstance();
+    return false;
+} 
 V8_EXPORT FResultInfo * GetJsValue(FResultInfo *ResultInfo, const char* key)
 {
     if (key != nullptr && !ResultInfo->Result.IsEmpty())
