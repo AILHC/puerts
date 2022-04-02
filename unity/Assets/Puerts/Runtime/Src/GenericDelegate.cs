@@ -391,7 +391,7 @@ namespace Puerts
 
             // }
 
-            IntPtr resultInfo = PuertsDLL.InvokeJSFunction(nativeJsFuncPtr, true);
+            IntPtr resultInfo = PuertsDLL.InvokeJSFunction(nativeJsFuncPtr,args.Length, true);
             if (resultInfo == IntPtr.Zero)
             {
                 return default(TResult);
@@ -428,7 +428,7 @@ namespace Puerts
             //     jsEnv.GeneralSetterManager.GetTranslateFunc(o.GetType())(jsEnv.isolate, NativeValueApi.SetValueToArgument, nativeJsFuncPtr, o);
 
             // }
-            IntPtr resultInfo = PuertsDLL.InvokeJSFunction(nativeJsFuncPtr, true);
+            IntPtr resultInfo = PuertsDLL.InvokeJSFunction(nativeJsFuncPtr,args.Length, true);
             if (resultInfo == IntPtr.Zero)
             {
                 return default(TResult);

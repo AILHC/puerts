@@ -25,6 +25,14 @@
 
 #include "ScriptEngine.h"
 
+#include "Log.h"
+
+#if _WIN64
+#include "Blob/Win64/SnapshotBlob.h"
+#else
+#include "Blob/Win32/SnapshotBlob.h"
+#endif
+
 #if SCRIPT_ENGINE_TYPE == SCRIPT_ENGINE_V8
 
     #include "../MappingUtils.h"
@@ -217,6 +225,13 @@ public:
         }
 
         bool ok = v8::V8::Initialize();
+        //AILHC Start 由于puerts的v8编译开启了快照加载功能，所以必须调用这个加载快照的逻辑，不然就没法创建js环境
+        v8::StartupData SnapshotBlob;
+        SnapshotBlob.data = (const char *)SnapshotBlobCode;
+        SnapshotBlob.raw_size = sizeof(SnapshotBlobCode);
+        v8::V8::SetSnapshotDataBlob(&SnapshotBlob);
+        //AILHC END
+        PLog(puerts::Log, "v8 initialize");
         assert(ok);
     }
 
@@ -510,6 +525,7 @@ ScriptEngine::ScriptEngine()
 ScriptEngine::~ScriptEngine() = default;
 
 bool ScriptEngine::postInit() {
+    SE_LOGD("postInit");
     v8::HandleScope hs(_isolate);
     _isolate->Enter();
     _isolate->SetCaptureStackTraceForUncaughtExceptions(true, JSB_STACK_FRAME_LIMIT, v8::StackTrace::kOverview);
@@ -522,11 +538,9 @@ bool ScriptEngine::postInit() {
     Object::setup();
     Class::setIsolate(_isolate);
     Object::setIsolate(_isolate);
-
     _globalObj = Object::_createJSObject(nullptr, _isolate->GetCurrentContext()->Global());
     _globalObj->root();
     _globalObj->setProperty("window", Value(_globalObj));
-
     se::Value consoleVal;
     if (_globalObj->getProperty("console", &consoleVal) && consoleVal.isObject()) {
         consoleVal.toObject()->getProperty("log", &oldConsoleLog);
@@ -547,7 +561,6 @@ bool ScriptEngine::postInit() {
         consoleVal.toObject()->getProperty("assert", &oldConsoleAssert);
         consoleVal.toObject()->defineFunction("assert", _SE(jsbConsoleAssert));
     }
-
     _globalObj->setProperty("scriptEngineType", se::Value("V8"));
 
     _globalObj->defineFunction("log", seLogCallback);

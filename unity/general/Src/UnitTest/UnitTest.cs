@@ -42,7 +42,8 @@ namespace Puerts.UnitTest
         }
 
         private Dictionary<string, string> mockFileContent = new Dictionary<string, string>();
-        public void AddMockFileContent(string fileName, string content) {
+        public void AddMockFileContent(string fileName, string content)
+        {
             mockFileContent.Add(fileName, content);
         }
     }
@@ -1258,10 +1259,10 @@ namespace Puerts.UnitTest
             Assert.True(noArgs_void_Func_res == null);
 
             double noArgs_returnNumber_Func_res = ns.CallFunc<double>("noArgs_returnNumber_Func");
-            
+
             Assert.True(noArgs_returnNumber_Func_res == 1f);
 
-            object args_void_Func_res = ns.CallFunc<object>("args_void_Func",1,2,3,4,5);
+            object args_void_Func_res = ns.CallFunc<object>("args_void_Func", 1, 2, 3, 4, 5);
 
             Assert.True(args_void_Func_res == null);
 
@@ -1285,10 +1286,31 @@ namespace Puerts.UnitTest
             var jsEnv = new JsEnv(loader);
             var ns = jsEnv.ExecuteModule<JSObject>("whatever.mjs");
             double a = ns.GetValue<double>("a");
-            
+
             Assert.True(a == 2);
 
             jsEnv.Dispose();
+        }
+        [Test]
+        public void TestSE()
+        {
+            LogCallback logcb = (content) =>
+            {
+                Console.WriteLine(content);
+            };
+            LogCallback logwcb = (content) =>
+            {
+                Console.WriteLine(content);
+            };
+            LogCallback logecb = (content) =>
+            {
+                Console.WriteLine(content);
+            };
+            PuertsDLL.SetLogCallback(logcb, logwcb, logecb);
+            Acets.AcetsDLL.SE_Setup();
+            var res = Acets.AcetsDLL.SE_EvalString("console.log('ffff');var a = null;a.a = 1;");
+            
+            Assert.IsTrue(res);
         }
     }
 }

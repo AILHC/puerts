@@ -25,7 +25,7 @@
 ****************************************************************************/
 
 #pragma once
-
+#include "Log.h"
 #define SCRIPT_ENGINE_NONE 0
 #define SCRIPT_ENGINE_SM  1
 #define SCRIPT_ENGINE_V8  2
@@ -86,21 +86,23 @@ void seLogD(const char *format, ...);
 void seLogE(const char *format, ...);
 
     #define LOG_TAG           "jswrapper"
-    #define SE_LOGD(fmt, ...) seLogD("D/" LOG_TAG " (" QUOTEME(__LINE__) "): " fmt "", ##__VA_ARGS__)
-    #define SE_LOGE(fmt, ...) seLogE("E/" LOG_TAG " (" QUOTEME(__LINE__) "): " fmt "", ##__VA_ARGS__)
+    // #define SE_LOGD(fmt, ...) seLogD("D/" LOG_TAG " (" QUOTEME(__LINE__) "): " fmt "", ##__VA_ARGS__)
+    // #define SE_LOGE(fmt, ...) seLogE("E/" LOG_TAG " (" QUOTEME(__LINE__) "): " fmt "", ##__VA_ARGS__)
+    #define SE_LOGD(fmt, ...) PLog(puerts::Log,"D/" LOG_TAG " (" QUOTEME(__LINE__) "): " fmt "", ##__VA_ARGS__)
+    #define SE_LOGE(fmt, ...) PLog(puerts::Error,"E/" LOG_TAG " (" QUOTEME(__LINE__) "): " fmt "", ##__VA_ARGS__)
 
 #else
 
     #define SE_LOGD(...)                  \
-        do {                              \
-            fprintf(stdout, __VA_ARGS__); \
-            fflush(stdout);               \
-        } while (false)
+        // do {                              \
+            // fprintf(stdout, __VA_ARGS__); \
+            // fflush(stdout);               \
+        // } while (false)
     #define SE_LOGE(...)                  \
-        do {                              \
-            fprintf(stderr, __VA_ARGS__); \
-            fflush(stderr);               \
-        } while (false)
+        // do {                              \
+            // fprintf(stderr, __VA_ARGS__); \
+            // fflush(stderr);               \
+        // } while (false)
 
 #endif
 

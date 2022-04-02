@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.8)
 set(USE_SE_V8 ON)
 set(USE_V8_DEBUGGER ON)
 include(${CMAKE_CURRENT_LIST_DIR}/predefine.cmake)
-project(jswrapper CXX)
+# project(jswrapper CXX)
 
 if(NOT DEFINED CC_SE_V8)
     set(SE_STANDALONE_BUILD ON)
@@ -11,7 +11,7 @@ if(NOT DEFINED CC_SE_V8)
     set(USE_SE_JSC OFF)
 endif()
 
-set(module_name ccjswrapper)
+# set(module_name ccjswrapper)
 
 set(jswrapper_source)
 

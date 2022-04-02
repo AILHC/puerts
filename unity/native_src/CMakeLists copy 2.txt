@@ -16,7 +16,6 @@ if ( IOS )
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fembed-bitcode")
 endif ()
 
-
 find_path(PUERTS_PROJECT_DIR NAMES SConstruct
     PATHS 
     ${PROJECT_SOURCE_DIR}
@@ -41,24 +40,15 @@ include_directories(
     ${ThirdParty}/Include/asio
     Inc
     ${PROJECT_SOURCE_DIR}/../../unreal/Puerts/Source/JsEnv/Private
-    # jswrapper
-    ${PROJECT_SOURCE_DIR}/jswrapper/include/base
-    ${PROJECT_SOURCE_DIR}/jswrapper/include/jswrapper
-    ${PROJECT_SOURCE_DIR}/jswrapper/include/jswrapper/v8
 )
 
 set ( PUERTS_INC
     Inc/Log.h
-    # AILHC 
-    Inc/SEHook.h
     Inc/JSEngine.h
     Inc/V8Utils.h
     Inc/JSFunction.h
     ${PROJECT_SOURCE_DIR}/../../unreal/Puerts/Source/JsEnv/Private/V8InspectorImpl.h
     ${PROJECT_SOURCE_DIR}/../../unreal/Puerts/Source/JsEnv/Private/PromiseRejectCallback.hpp
-
-    
-
 )
 
 set ( PUERTS_SRC
@@ -68,12 +58,9 @@ set ( PUERTS_SRC
     Src/JSEngine_Eval.cpp
     Src/JSFunction.cpp
     ${PROJECT_SOURCE_DIR}/../../unreal/Puerts/Source/JsEnv/Private/V8InspectorImpl.cpp
-
 )
 
-
 macro(source_group_by_dir proj_dir source_files)
-    
     if(MSVC OR APPLE)
         get_filename_component(sgbd_cur_dir ${proj_dir} ABSOLUTE)
         foreach(sgbd_file ${${source_files}})
@@ -91,29 +78,14 @@ macro(source_group_by_dir proj_dir source_files)
 endmacro(source_group_by_dir)
 
 source_group_by_dir(${CMAKE_CURRENT_SOURCE_DIR} PUERTS_INC)
-
 source_group_by_dir(${CMAKE_CURRENT_SOURCE_DIR} PUERTS_SRC)
-# 添加jswrapper
-if(JS_ENGINE STREQUAL "v8")
-    include(${PROJECT_SOURCE_DIR}/jswrapper/CMakeLists.txt)
-endif()
-set(jswrapper_source2)
-foreach(_var ${jswrapper_source})
-    list(APPEND jswrapper_source2 jswrapper/${_var})
-endforeach()
 
-source_group_by_dir(${CMAKE_CURRENT_SOURCE_DIR} jswrapper_source2)
-
-# message(${jswrapper_source2})
 
 if ( APPLE )
     if ( IOS )
         set(CMAKE_OSX_ARCHITECTURES "$(ARCHS_STANDARD)")
         add_library(puerts STATIC
-            jswrapper
-            ${jswrapper_source2}
-           ${PUERTS_SRC} ${PUERTS_INC} 
-           
+           ${PUERTS_SRC} ${PUERTS_INC}
         )
 		set_xcode_property (puerts IPHONEOS_DEPLOYMENT_TARGET "7.0" "all")
     else ()
@@ -124,18 +96,12 @@ if ( APPLE )
         set(CMAKE_SKIP_RPATH FALSE)    
         set(CMAKE_INSTALL_RPATH "@loader_path/")
         add_library(puerts SHARED
-            jswrapper
-            ${jswrapper_source2}
-            ${PUERTS_SRC} ${PUERTS_INC} 
-            
+            ${PUERTS_SRC} ${PUERTS_INC}
         )
     endif ()
 else ()
     add_library(puerts SHARED
-        jswrapper
-        ${jswrapper_source2}
         ${PUERTS_SRC} ${PUERTS_INC}
-        
     )
 endif ()
 
@@ -143,10 +109,7 @@ if ( WIN32 AND NOT CYGWIN )
     target_compile_definitions (puerts PRIVATE BUILDING_V8_SHARED)
 endif ()
 
-
-
 include(${PROJECT_SOURCE_DIR}/cmake/${JS_ENGINE}/CMakeLists.txt)
-
 
 if ( MSYS OR WIN32 )
     if ( WIN32 ) 
