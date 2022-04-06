@@ -212,6 +212,14 @@ public:
          *  @return true if succeed, otherwise false.
          */
     bool defineFunction(const char *funcName, v8::FunctionCallback func);
+/**
+         *  @brief Defines a function with a native callback for an object.
+         *  @param[in] funcName A utf-8 string containing the function name.
+         *  @param[in] func The native callback triggered by JavaScript code.
+         *  @param[in] anyValue anyValue.
+         *  @return true if succeed, otherwise false.
+         */
+    bool defineFunction(const char* funcName, v8::FunctionCallback func, void* anyValue);
 
     /**
          *  @brief Tests whether an object can be called as a function.

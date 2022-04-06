@@ -688,7 +688,25 @@ bool Object::defineFunction(const char *funcName, void (*func)(const v8::Functio
 
     return ret.IsJust() && ret.FromJust();
 }
+bool Object::defineFunction(const char* funcName, v8::FunctionCallback func, void* anyValue)
+{
+    v8::MaybeLocal<v8::String> maybeFuncName = v8::String::NewFromUtf8(__isolate, funcName, v8::NewStringType::kNormal);
+    if (maybeFuncName.IsEmpty()) {
+        return false;
+    }
 
+    v8::Local<v8::Context>       context   = __isolate->GetCurrentContext();
+    v8::MaybeLocal<v8::Function> maybeFunc = v8::FunctionTemplate::New(__isolate, func, v8::External::New(__isolate,anyValue))->GetFunction(context);
+    if (maybeFunc.IsEmpty()) {
+        return false;
+    }
+
+    v8::Maybe<bool> ret = _obj.handle(__isolate)->Set(context,
+                                                      v8::Local<v8::Name>::Cast(maybeFuncName.ToLocalChecked()),
+                                                      maybeFunc.ToLocalChecked());
+
+    return ret.IsJust() && ret.FromJust();
+}
 bool Object::isArray() const {
     return const_cast<Object *>(this)->_obj.handle(__isolate)->IsArray();
 }

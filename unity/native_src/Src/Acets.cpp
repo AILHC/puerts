@@ -47,13 +47,31 @@ extern "C"
     {
         se::ScriptEngine::destroyInstance();
     }
+    void CSharpFunctionCallbackWrap(const v8::FunctionCallbackInfo<v8::Value>& info)
+    {
+        v8::Isolate* _isolate = info.GetIsolate();
+        v8::HandleScope _hs(_isolate);
+        se::ValueArray& args = se::gValueArrayPool.get(info.Length());
+        se::CallbackDepthGuard depthGuard{args, se::gValueArrayPool._depth};
+        se::internal::jsToSeArgs(info, args);
+        se::PrivateObjectBase* privateObject =
+            static_cast<se::PrivateObjectBase*>(se::internal::getPrivate(_isolate, info.This(), 0));
+        se::Object* thisObject = reinterpret_cast<se::Object*>(se::internal::getPrivate(_isolate, info.This(), 1));
+        se::State state(thisObject, privateObject, args);
+        
+        
 
+        SE_CSharpFunctionCallback callback = reinterpret_cast<SE_CSharpFunctionCallback>((v8::Local<v8::External>::Cast(info.Data()))->Value());
+
+        callback(state);
+    }
     V8_EXPORT void SE_SetGlobalFunction(const char* Name, SE_CSharpFunctionCallback Callback)
     {
-        SE_BIND_FUNC(Callback)
-        se::ScriptEngine::getInstance()->getGlobalObject()->defineFunction(Name, _SE(Callback));
+
+        se::ScriptEngine::getInstance()->getGlobalObject()->defineFunction(Name, CSharpFunctionCallbackWrap, Callback);
     }
-    V8_EXPORT void* GetStateArgs(se::State *state){
+    V8_EXPORT void* GetStateArgs(se::State* state)
+    {
         // auto args = state->args();
         // if(args.size()>0){
         //     args.
