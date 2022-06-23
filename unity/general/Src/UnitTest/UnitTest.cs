@@ -1309,8 +1309,49 @@ namespace Puerts.UnitTest
             PuertsDLL.SetLogCallback(logcb, logwcb, logecb);
             Acets.AcetsDLL.SE_Setup();
             var res = Acets.AcetsDLL.SE_EvalString("console.log('ffff');var a = null;a.a = 1;");
-            
+            Acets.AcetsDLL.SE_Destroy();
             Assert.IsTrue(res);
+        }
+        [MonoPInvokeCallback(typeof(Acets.SEV8FunctionCallback))]
+        internal static bool TestSeGlobalFunctionWrap(IntPtr state)
+        {
+            var sum = 1 + 1;
+            Acets.AcetsDLL.SE_ReturnNumber(state, sum);
+            return true;
+        }
+        [Test]
+        public void TestSE_SetGlobalFunction()
+        {
+            LogCallback logcb = (content) =>
+            {
+                Console.WriteLine(content);
+            };
+            LogCallback logwcb = (content) =>
+            {
+                Console.WriteLine(content);
+            };
+            LogCallback logecb = (content) =>
+            {
+                Console.WriteLine(content);
+            };
+            PuertsDLL.SetLogCallback(logcb, logwcb, logecb);
+
+            Acets.AcetsDLL.SE_Setup();
+            Acets.AcetsDLL.SE_SetGlobalFunction("testGlobalFunction", TestSeGlobalFunctionWrap);
+            Acets.SEV8FunctionCallback cb = (IntPtr state) =>
+            {
+                var sum = 2 + 2;
+                Acets.AcetsDLL.SE_ReturnNumber(state, sum);
+                return true;
+            };
+            Acets.AcetsDLL.SE_SetGlobalFunction("testGlobalFunction2", cb);
+
+            var res = Acets.AcetsDLL.SE_EvalString("var a = window.testGlobalFunction();console.log('sum:'+a)");
+            Assert.IsTrue(res);
+            var res2 = Acets.AcetsDLL.SE_EvalString("var a = window.testGlobalFunction2();console.log('sum:'+a)");
+            Assert.IsTrue(res);
+            Acets.AcetsDLL.SE_Destroy();
+            
         }
     }
 }

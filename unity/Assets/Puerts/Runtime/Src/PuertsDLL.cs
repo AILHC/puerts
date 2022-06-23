@@ -111,24 +111,8 @@ namespace Puerts
 
         [DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern void DestroyJSEngine(IntPtr isolate);
-        //AILHC 销毁cocosjs引擎 -DLL
-        [DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void DestroyJSEngine_SE(IntPtr se);
-
         [DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern void SetGlobalFunction(IntPtr isolate, string name, IntPtr v8FunctionCallback, long data);
-        //AILHC cocosjs引擎设置全局函数 -DLL
-        [DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void Set_SE_GlobalFunction(IntPtr se, string name, IntPtr v8FunctionCallback, long data);
-        // AILHC 向cocosjs引擎注入C#方法
-        public static void Set_SE_GlobalFunction(IntPtr se, string name, V8FunctionCallback v8FunctionCallback, long data)
-        {
-#if PUERTS_GENERAL || (UNITY_WSA && !UNITY_EDITOR)
-            GCHandle.Alloc(v8FunctionCallback);
-#endif
-            IntPtr fn = v8FunctionCallback == null ? IntPtr.Zero : Marshal.GetFunctionPointerForDelegate(v8FunctionCallback);
-            Set_SE_GlobalFunction(se, name, fn, data);
-        }
 
         public static void SetGlobalFunction(IntPtr isolate, string name, V8FunctionCallback v8FunctionCallback, long data)
         {

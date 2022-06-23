@@ -10,13 +10,16 @@
 #include "V8Utils.h"
 #include "Base.h"
 #include "jswrapper/include/jswrapper/SeApi.h"
-#include "SEHook.h"
+
 #include "Log.h"
+#include "Acets.h"
+#include "jswrapper/include/jswrapper/v8/Utils.h"
 
 #define LIB_VERSION 15
 
 #define API_LEVEL 16
 
+using acets::SE_FuncCallbackInfo;
 using puerts::FLifeCycleInfo;
 using puerts::FResultInfo;
 using puerts::FV8Utils;
@@ -24,9 +27,6 @@ using puerts::FValue;
 using puerts::JSEngine;
 using puerts::JSFunction;
 using puerts::JsValueType;
-
-typedef void (*SE_CSharpFunctionCallback)(const se::State& state);
-
 #ifdef __cplusplus
 extern "C"
 {
@@ -58,26 +58,88 @@ extern "C"
             static_cast<se::PrivateObjectBase*>(se::internal::getPrivate(_isolate, info.This(), 0));
         se::Object* thisObject = reinterpret_cast<se::Object*>(se::internal::getPrivate(_isolate, info.This(), 1));
         se::State state(thisObject, privateObject, args);
-        
-        
 
-        SE_CSharpFunctionCallback callback = reinterpret_cast<SE_CSharpFunctionCallback>((v8::Local<v8::External>::Cast(info.Data()))->Value());
+        SE_FuncCallbackInfo* cbInfo = reinterpret_cast<SE_FuncCallbackInfo*>((v8::Local<v8::External>::Cast(info.Data()))->Value());
+        bool ret = false;
+        ret = cbInfo->Callback(state);
+        if (!ret)
+        {
+            SE_LOGE("[ERROR] Failed to invoke %s, location: %s:%d\n", cbInfo->name, __FILE__, __LINE__);
+        }
 
-        callback(state);
+        se::internal::setReturnValue(state.rval(), info);
     }
-    V8_EXPORT void SE_SetGlobalFunction(const char* Name, SE_CSharpFunctionCallback Callback)
+    V8_EXPORT void SE_SetGlobalFunction(const char* name, SE_CSharpFunctionCallback callback)
     {
-
-        se::ScriptEngine::getInstance()->getGlobalObject()->defineFunction(Name, CSharpFunctionCallbackWrap, Callback);
+        auto info = new SE_FuncCallbackInfo(false, callback, name);
+        SE_LOGD("define func0");
+        se::AutoHandleScope hs;
+        se::ScriptEngine::getInstance()->getGlobalObject()->defineFunction(name, CSharpFunctionCallbackWrap, info);
     }
-    V8_EXPORT void* GetStateArgs(se::State* state)
+    V8_EXPORT void SE_InvokeJSFunction(se::State* state, void* args)
     {
-        // auto args = state->args();
-        // if(args.size()>0){
-        //     args.
-        // }
+        
     }
-    //-------------------------- end debug --------------------------
+    //--------------------------------------------return value to js -----------------------------------------------
+    // V8_EXPORT void ReturnClass(v8::Isolate* Isolate, const v8::FunctionCallbackInfo<v8::Value>& Info, int ClassID)
+    // {
+    //     auto JsEngine = FV8Utils::IsolateData<JSEngine>(Isolate);
+    //     Info.GetReturnValue().Set(JsEngine->GetClassConstructor(ClassID));
+    // }
+
+    // V8_EXPORT void ReturnObject(v8::Isolate* Isolate, const v8::FunctionCallbackInfo<v8::Value>& Info, int ClassID, void* Ptr)
+    // {
+    //     auto JsEngine = FV8Utils::IsolateData<JSEngine>(Isolate);
+    //     Info.GetReturnValue().Set(JsEngine->FindOrAddObject(Isolate, Isolate->GetCurrentContext(), ClassID, Ptr));
+    // }
+
+    V8_EXPORT void SE_ReturnNumber(se::State& state, double Number)
+    {
+        state.rval().setDouble(Number);
+    }
+
+    V8_EXPORT void SE_ReturnString(se::State& state, const char* String)
+    {
+        state.rval().setString(String);
+    }
+
+    V8_EXPORT void SE_ReturnBigInt(se::State& state, int64_t BigInt)
+    {
+        state.rval().setInt64(BigInt);
+    }
+
+    V8_EXPORT void SE_ReturnArrayBuffer(se::State& state, unsigned char* Bytes, int Length)
+    {
+        se::HandleObject obj(se::Object::createArrayBufferObject(Bytes, Length));
+        state.rval().setObject(obj);
+    }
+
+    V8_EXPORT void SE_ReturnBoolean(se::State& state, bool Bool)
+    {
+        state.rval().setBoolean(Bool);
+    }
+
+    // V8_EXPORT void SE_ReturnDate(se::State&, double Date)
+    // {
+    //     Info.GetReturnValue().Set(v8::Date::New(Isolate->GetCurrentContext(), Date).ToLocalChecked());
+    // }
+
+    V8_EXPORT void SE_ReturnNull(se::State& state)
+    {
+        state.rval().setNull();
+    }
+
+    // V8_EXPORT void ReturnFunction(se::State& state)
+    // {
+    //     Info.GetReturnValue().Set(Function->GFunction.Get(Isolate));
+    // }
+
+    V8_EXPORT void SE_ReturnJSObject(se::State& state, se::Object* o)
+    {
+        state.rval().setObject(o);
+    }
+
+    //--------------------------------------------return value to js end-----------------------------------------------
 
 #ifdef __cplusplus
 }

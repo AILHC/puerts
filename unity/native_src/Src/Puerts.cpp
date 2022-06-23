@@ -9,7 +9,6 @@
 #include "V8Utils.h"
 
 #include "jswrapper/include/jswrapper/SeApi.h"
-#include "SEHook.h"
 #include "Log.h"
 
 #define LIB_VERSION 15
@@ -102,41 +101,6 @@ V8_EXPORT FResultInfo * ExecuteModule(v8::Isolate *Isolate, const char* Path, co
         return nullptr;
     }
 }
-V8_EXPORT bool TestSE(const char* str){
-    auto *engine = se::ScriptEngine::getInstance();
-    
-    PLog(puerts::Log, "[PuertsDLL][TesSE]");
-    // auto GPlatform = v8::platform::NewDefaultPlatform().release();
-    //     v8::V8::InitializePlatform(GPlatform);
-    //     v8::V8::Initialize();
-    //     v8::StartupData SnapshotBlob;
-    //     SnapshotBlob.data = (const char *)SnapshotBlobCode;
-    //     SnapshotBlob.raw_size = sizeof(SnapshotBlobCode);
-    //     v8::V8::SetSnapshotDataBlob(&SnapshotBlob);
-        // auto CreateParams = new v8::Isolate::CreateParams();
-        // CreateParams->array_buffer_allocator = v8::ArrayBuffer::Allocator::NewDefaultAllocator();
-        // auto MainIsolate = v8::Isolate::New(*CreateParams);
-        // PLog(puerts::Log, "[PuertsDLL][TesSE]2");
-    // try
-    // {
-    //     engine->start();
-    // }
-    // catch(const std::exception& e)
-    // {
-    //     std::string wstr=e.what();
-    //     PLog(puerts::Log, "[PuertsDLL][TesSE]"+wstr);
-    // }
-    
-    engine->start();
-    PLog(puerts::Log, "[PuertsDLL][TesSE]Started");
-    auto ret = engine->evalString(str);
-    PLog(puerts::Log, "[PuertsDLL][TesSE]EvalString");
-    
-    if (!ret) return false;
-
-    se::ScriptEngine::destroyInstance();
-    return true;
-} 
 V8_EXPORT FResultInfo * GetJsValue(FResultInfo *ResultInfo, const char* key)
 {
     if (key != nullptr && !ResultInfo->Result.IsEmpty())

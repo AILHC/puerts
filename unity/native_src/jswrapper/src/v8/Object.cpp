@@ -700,7 +700,6 @@ bool Object::defineFunction(const char* funcName, v8::FunctionCallback func, voi
     if (maybeFunc.IsEmpty()) {
         return false;
     }
-
     v8::Maybe<bool> ret = _obj.handle(__isolate)->Set(context,
                                                       v8::Local<v8::Name>::Cast(maybeFuncName.ToLocalChecked()),
                                                       maybeFunc.ToLocalChecked());
