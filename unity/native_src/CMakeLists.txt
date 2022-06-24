@@ -113,6 +113,11 @@ if ( NOT CMAKE_BUILD_TYPE MATCHES "Release" )
     target_compile_definitions (puerts PRIVATE PUERTS_DEBUG)
 endif ()
 
+if ( NOT WITH_INSPECTOR MATCHES "WITH_INSPECTOR" )
+    target_compile_definitions (puerts PRIVATE WITH_INSPECTOR)
+endif ()
+
+
 include(${PROJECT_SOURCE_DIR}/cmake/${JS_ENGINE}/CMakeLists.txt)
 
 if ( MSYS OR WIN32 )
