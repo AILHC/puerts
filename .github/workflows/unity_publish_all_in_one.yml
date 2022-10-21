@@ -211,7 +211,7 @@ jobs:
           config: Debug             
   publish:
     runs-on: ubuntu-latest
-    needs: [windows,osx,ios,android,windows_qjs,osx_qjs,ios_qjs,android_qjs,windows_nodejs,osx_nodejs,android_nodejs,ios_nodejs,linux64]
+    needs: [windows,osx,ios,android,windows_qjs,osx_qjs,ios_qjs,android_qjs,windows_nodejs,osx_nodejs,android_nodejs,ios_nodejs,linux64,windows_debug,linux64_debug,ios_debug,android_debug,osx_debug]
     steps:
       - uses: actions/checkout@v3
       
