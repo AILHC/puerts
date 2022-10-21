@@ -1,0 +1,274 @@
+name: unity publish
+
+on: 
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'tag name'     
+        required: true
+
+env:
+  RUNID: 613573412
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      - name: BuildAndroid
+        uses: ./.github/workflows/composites/unity-build-plugins/android/
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          backend: v8_9.4
+
+  android_qjs:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      - name: BuildAndroidQuickJS
+        uses: ./.github/workflows/composites/unity-build-plugins/android/
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          backend: quickjs
+          
+  android_nodejs:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      - name: BuildAndroidNodeJS
+        uses: ./.github/workflows/composites/unity-build-plugins/android/
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          backend: nodejs_16
+
+  ios:
+    runs-on: macos-11
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: BuildiOS
+        uses: ./.github/workflows/composites/unity-build-plugins/ios/
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          backend: v8_9.4     
+  ios_qjs:
+    runs-on: macos-11
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: BuildiOSQuickjs
+        uses: ./.github/workflows/composites/unity-build-plugins/ios/
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          backend: quickjs
+          
+  ios_nodejs:
+    runs-on: macos-11
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: BuildiOSNodeJS
+        uses: ./.github/workflows/composites/unity-build-plugins/ios/
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          backend: nodejs_16
+
+  osx:
+    runs-on: macos-11
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: BuildOSX
+        uses: ./.github/workflows/composites/unity-build-plugins/osx/
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          backend: v8_9.4
+
+  osx_nodejs:
+    runs-on: macos-11
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: BuildOSXNodejs
+        uses: ./.github/workflows/composites/unity-build-plugins/osx/
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          backend: nodejs_16
+          
+  osx_qjs:
+    runs-on: macos-11
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: BuildOSXQuickJS
+        uses: ./.github/workflows/composites/unity-build-plugins/osx/
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          backend: quickjs
+
+  windows:
+    runs-on: windows-2019
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: BuildWindows
+        uses: ./.github/workflows/composites/unity-build-plugins/windows/
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          backend: v8_9.4
+          
+  windows_qjs:
+    runs-on: windows-2019
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: BuildWindowsQuickjs
+        uses: ./.github/workflows/composites/unity-build-plugins/windows/
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          backend: quickjs
+
+  windows_nodejs:
+    runs-on: windows-2019
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: BuildWindowsNodeJS
+        uses: ./.github/workflows/composites/unity-build-plugins/windows/
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          backend: nodejs_16
+  
+  linux64:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      - name: BuildLinux
+        uses: ./.github/workflows/composites/unity-build-plugins/linux/
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          backend: v8_9.4
+  osx_debug:
+    runs-on: macos-11
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: BuildOSX-Debug
+        uses: ./.github/workflows/composites/unity-build-plugins/osx/
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          backend: v8_9.4
+          config: DEBUG
+
+  android_debug:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      - name: BuildAndroid-Debug
+        uses: ./.github/workflows/composites/unity-build-plugins/android/
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          backend: v8_9.4
+          config: DEBUG
+
+  ios_debug:
+    runs-on: macos-11
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: BuildiOS-Debug
+        uses: ./.github/workflows/composites/unity-build-plugins/ios/
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          backend: v8_9.4 
+          config: DEBUG
+  linux64_debug:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      - name: BuildLinux-Debug
+        uses: ./.github/workflows/composites/unity-build-plugins/linux/
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          backend: v8_9.4
+          config: DEBUG
+  windows_debug:
+    runs-on: windows-2019
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: BuildWindows
+        uses: ./.github/workflows/composites/unity-build-plugins/windows/
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          backend: v8_9.4
+          config: DEBUG             
+  publish:
+    runs-on: ubuntu-latest
+    needs: [windows,osx,ios,android,windows_qjs,osx_qjs,ios_qjs,android_qjs,windows_nodejs,osx_nodejs,android_nodejs,ios_nodejs,linux64]
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Retrieve version
+        run: |
+          echo "API_LEVEL=$(cat unity/native_src/Src/Puerts.cpp | grep -Po '(?<=API_LEVEL\s)(\d+)')" >> $GITHUB_ENV
+            
+      - uses: actions/download-artifact@v1
+        with:
+          name: Unity_Plugins (v8_9.4_Release)
+          path: Puerts/Plugins/V8
+      - uses: actions/download-artifact@v1
+        with:
+          name: Unity_Plugins (v8_9.4_DEBUG)
+          path: Puerts/Plugins/V8_DEBUG
+      - uses: actions/download-artifact@v1
+        with:
+          name: Unity_Plugins (quickjs_Release)
+          path: Puerts/Plugins/Quickjs
+
+      - uses: actions/download-artifact@v1
+        with:
+          name: Unity_Plugins (nodejs_16_Release)
+          path: Puerts/Plugins/Nodejs
+          
+      - name: Create Release Asset
+        run: |
+          cp $GITHUB_WORKSPACE/doc/unity/zhcn/changelog.md $GITHUB_WORKSPACE/unity/Assets/Puerts
+          cp $GITHUB_WORKSPACE/LICENSE $GITHUB_WORKSPACE/unity/Assets/Puerts
+          cp -r $GITHUB_WORKSPACE/unity/Assets/Puerts . && tar cvfz ../PuerTS_All_${{ github.event.inputs.tag_name }}.tgz Puerts
+          
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          body: |
+            中文版本请查看 [`doc/unity/zhcn/changelog.md`](https://github.com/Tencent/puerts/blob/master/doc/unity/zhcn/changelog.md)
+            
+            > difference between Node.js/Quickjs/V8: [wiki](https://github.com/Tencent/puerts/wiki/%5BUnity%5D-Release%E9%87%8C%E5%90%84%E4%B8%AAPlugin%E7%9A%84%E5%8C%BA%E5%88%AB)
+          tag_name: Unity_v${{ github.event.inputs.tag_name }}
+          release_name: Unity_v${{ github.event.inputs.tag_name }},ApiLevel:${{ env.API_LEVEL }}
+          draft: false
+          prerelease: false
+      
+      - name: Upload All Plugins
+        #id: upload-release-asset 
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./PuerTS_All_${{ github.event.inputs.tag_name }}.tgz
+          asset_name: PuerTS_All_${{ github.event.inputs.tag_name }}.tgz
+          asset_content_type: application/tgz   
+
+      # - name: Trigger demo/upm repository update
+      #   run: |
+      #     curl -XPOST -u "${{ secrets.PAT_USERNAME}}:${{secrets.PAT_TOKEN}}" -H "Accept: application/vnd.github.v3+json" -H "Content-Type: application/json" https://api.github.com/repos/zombieyang/puerts_unity_demo/actions/workflows/sync-package.yml/dispatches -d '{"ref": "master", "inputs": {"push_tag_version": "${{ github.event.inputs.tag_name }}"}}'
