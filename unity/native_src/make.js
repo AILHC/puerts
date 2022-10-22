@@ -229,7 +229,7 @@ const platformCompileConfig = {
     },
     'linux': {
         'x64': {
-            outputPluginPath: 'linux/x86_64',
+            outputPluginPath: 'Linux/x86_64',
             hook: async function (CMAKE_BUILD_PATH, options, cmakeDArgs) {
                 sx.cd(CMAKE_BUILD_PATH);
                 await sxExecAsync(`cmake ${cmakeDArgs} -DJS_ENGINE=${options.backend} -DCMAKE_BUILD_TYPE=${options.config} ..`)

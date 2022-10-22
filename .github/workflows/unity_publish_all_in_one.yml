@@ -222,11 +222,11 @@ jobs:
       - uses: actions/download-artifact@v1
         with:
           name: Unity_Plugins (v8_9.4_Release)
-          path: Puerts/Plugins/V8
+          path: Puerts/Plugins/V8_Release
       - uses: actions/download-artifact@v1
         with:
           name: Unity_Plugins (v8_9.4_DEBUG)
-          path: Puerts/Plugins/V8_DEBUG
+          path: Puerts/Plugins/V8_Debug
       - uses: actions/download-artifact@v1
         with:
           name: Unity_Plugins (quickjs_Release)
