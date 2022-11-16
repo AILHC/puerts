@@ -6,9 +6,11 @@ namespace PuertsStaticWrap
     {
         public static void Register(Puerts.JsEnv jsEnv)
         {
-            jsEnv.AddLazyStaticWrapLoader(typeof(Puerts.UnitTest.OptionalParametersClass), Puerts_UnitTest_OptionalParametersClass_Wrap.GetRegisterInfo);
-                
-                
+            //jsEnv.AddLazyStaticWrapLoader(typeof(Puerts.UnitTest.OptionalParametersClass), Puerts_UnitTest_OptionalParametersClass_Wrap.GetRegisterInfo);
+
+            jsEnv.AddLazyStaticWrapLoader(typeof(Puerts.UnitTest.OptionalParametersClass), Puerts_UnitTest_OptionalParametersClass_Wrap_Perf.GetRegisterInfo);
+
+
             jsEnv.AddLazyStaticWrapLoader(typeof(Puerts.UnitTest.WrapperTest), Puerts_UnitTest_WrapperTest_Wrap.GetRegisterInfo);
                 
                 

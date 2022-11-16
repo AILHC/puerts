@@ -21,7 +21,11 @@ using puerts::JsValueType;
 #ifdef __cplusplus
 extern "C" {
 #endif
-
+typedef struct    // 参数结构体
+{
+    JsValueType type;
+    v8::Value *value;
+} MParam;
 // deprecated, delete in 1.4 plz
 V8_EXPORT int GetLibVersion()
 {
@@ -196,7 +200,18 @@ V8_EXPORT JsValueType GetJsValueType(v8::Isolate* Isolate, const v8::Value *Valu
         return FV8Utils::GetType(Context, Value);
     }
 }
+V8_EXPORT void GetArgumentValue2(v8::Isolate* Isolate, const v8::FunctionCallbackInfo<v8::Value>& Info, JsValueType* jsValueTypes,
+    v8::Value** values, int size)
+{
+    auto Context = Isolate->GetCurrentContext();
+    for (int i = 0; i < size; i++)
+    {
+        v8::Value *value = *Info[i];
+        jsValueTypes[i] = FV8Utils::GetType(Context, value);
 
+        values[i] = value;
+    }
+}
 V8_EXPORT JsValueType GetArgumentType(v8::Isolate* Isolate, const v8::FunctionCallbackInfo<v8::Value>& Info, int Index, int IsOut)
 {
     return GetJsValueType(Isolate, *Info[Index], IsOut);

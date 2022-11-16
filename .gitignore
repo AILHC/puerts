@@ -1,2 +1,6 @@
 .DS_Store
 .vscode
+**/native_src/build_*
+**/general/Bin
+**/general/Lib
+

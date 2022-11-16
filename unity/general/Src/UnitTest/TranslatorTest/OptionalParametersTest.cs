@@ -1,4 +1,6 @@
 using NUnit.Framework;
+using System;
+using System.Diagnostics;
 
 namespace Puerts.UnitTest
 {
@@ -178,7 +180,55 @@ namespace Puerts.UnitTest
             Assert.AreEqual("world hello", ret);
             jsEnv.Dispose();
         }
-
+        [Test]
+        public void WarpTest15()
+        {
+            var jsEnv = new JsEnv(new TxtLoader());
+            PuertsStaticWrap.AutoStaticCodeRegister.Register(jsEnv);
+            int ret = jsEnv.Eval<int>(@"
+               let temp = new CS.Puerts.UnitTest.OptionalParametersClass();
+               temp.Test_S(6,6,6);
+           ");
+            Assert.AreEqual(666, ret);
+            jsEnv.Dispose();
+        }
+        [Test]
+        public void WarpPerformenceTest1()
+        {
+            var jsEnv = new JsEnv(new TxtLoader());
+            PuertsStaticWrap.AutoStaticCodeRegister.Register(jsEnv);
+            
+            int ret = jsEnv.Eval<int>(@"
+               var start = new Date().getTime();
+               let temp = new CS.Puerts.UnitTest.OptionalParametersClass();
+               for(let i=0;i<100000;i++){
+                    temp.Test(6,6,6);
+               }
+               var end = new Date().getTime();
+               end - start
+           ");
+            Console.WriteLine("sw总共花费{0}ms.", ret);
+            Assert.AreEqual(ret, ret);
+            jsEnv.Dispose();
+        }
+        [Test]
+        public void WarpPerformenceTest2()
+        {
+            var jsEnv = new JsEnv(new TxtLoader());
+            PuertsStaticWrap.AutoStaticCodeRegister.Register(jsEnv);
+            int ret = jsEnv.Eval<int>(@"
+               var start = new Date().getTime();
+               let temp = new CS.Puerts.UnitTest.OptionalParametersClass();
+               for(let i=0;i<100000;i++){
+                    temp.Test_S(6,6,6);
+               }
+               var end = new Date().getTime();
+               end - start
+           ");
+            Console.WriteLine("sw总共花费{0}ms.", ret);
+            Assert.AreEqual(ret, ret);
+            jsEnv.Dispose();
+        }
         [Test]
         public void ReflectTest1()
         {

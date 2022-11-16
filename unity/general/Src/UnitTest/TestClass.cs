@@ -541,7 +541,14 @@ namespace Puerts.UnitTest
         {
             return i * 100 + j * 10 + k;
         }
-
+        public int Test_S(int i = 0, int j = 1, int k = 2)
+        {
+            return i * 100 + j * 10 + k;
+        }
+        public int Test_S(string i, int j = 1, int k = 2)
+        {
+            return j * 10 + k;
+        }
         public int Test(string i, int j = 1, int k = 2)
         {
             return j * 10 + k;

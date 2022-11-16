@@ -47,9 +47,29 @@ namespace Puerts.UnitTest
             IntPtr l = default(IntPtr)
         )
         { return 1; }
+        public static int PlaySound_S(
+            string uid,
+            int a = 3,
+            float b = .3f,
+            char c = 'c',
+            string d = "ddd",
+            ulong e = 12381263987129837,
+            long f = -123124124123,
+            bool g = false,
+            AENUM h = AENUM.b,
+            byte i = 255,
+            char j = char.MaxValue,
+            float k = float.PositiveInfinity,
+            IntPtr l = default(IntPtr)
+        )
+        { return 1; }
         public static int PlaySound(string uid,Action onCompleted = default) 
         { return 2; }
+        public static int PlaySound_S(string uid, Action onCompleted = default)
+        { return 2; }
         public static int PlaySound(string uid) 
+        { return 3; }
+        public static int PlaySound_S(string uid)
         { return 3; }
     }
     public class MultiEnvTestA

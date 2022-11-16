@@ -46,7 +46,12 @@ namespace Puerts
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 #endif
     public delegate void LogCallback(string content);
-
+    [StructLayout(LayoutKind.Sequential)]
+    public struct MParam
+    {
+        public JsValueType type;
+        public IntPtr value;
+    }
     [Flags]
     public enum JsValueType
     {
@@ -351,6 +356,9 @@ namespace Puerts
 
         [DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr GetArgumentValue(IntPtr info, int index);
+
+        [DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void GetArgumentValue2(IntPtr isolate, IntPtr info, [In,Out] JsValueType[] jsValueTypes,[In,Out] IntPtr[] valuePtrs, int size);
 
         [DllImport(DLLNAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern JsValueType GetJsValueType(IntPtr isolate, IntPtr value, bool isByRef);
